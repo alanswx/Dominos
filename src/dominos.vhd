@@ -34,7 +34,7 @@ port(
 			VideoW_O		: out std_logic;  -- White video output (680 Ohm)
 			VideoB_O		: out std_logic;	-- Black video output (1.2k)
 			Sync_O		        : out std_logic;  -- Composite sync output (1.2k)
-			Audio_O		        : out std_logic;  -- Ideally this should have a simple low pass filter
+			Audio_O		        : out std_logic_vector(7 downto 0);  -- Ideally this should have a simple low pass filter
 			Coin1_I		        : in  std_logic;  -- Coin switches (Active low)
 			Coin2_I		        : in  std_logic;
 			Start1_I		: in  std_logic;  -- Start buttons
@@ -49,13 +49,31 @@ port(
 			Right2		        : in  std_logic;
 			Test_I		        : in  std_logic;
 			Lamp1_O		        : out std_logic;	-- Player 1 and 2 start button LEDs
-			Lamp2_O		        : out std_logic
+			Lamp2_O		        : out std_logic;
+			
+			SW1_I			: in std_logic_vector(3 downto 0);
+			
+			
+			hs_O			: out std_logic;
+			vs_O			: out std_logic;
+			hblank_O		: out std_logic;
+			vblank_O		: out std_logic;
+
+			clk_12		: in std_logic;
+			clk_6_O		: out std_logic;
+
+			-- signals that carry the ROM data from the MiSTer disk
+			dn_addr        : in  std_logic_vector(15 downto 0);
+			dn_data        : in  std_logic_vector(7 downto 0);
+			dn_wr          : in  std_logic
+
+			
 			);
 end dominos;
 
 architecture rtl of dominos is
 
-signal clk_12			: std_logic;
+--signal clk_12			: std_logic;
 signal clk_6			: std_logic;
 signal phi1 			: std_logic;
 signal phi2			: std_logic;
@@ -130,6 +148,11 @@ signal Adr			: std_logic_vector(9 downto 0);
 signal SW1			: std_logic_vector(3 downto 0);
 signal Inputs			: std_logic_vector(1 downto 0);
 
+-- logic to load roms from disk
+signal rom3_cs   			: std_logic;
+signal rom4_cs   			: std_logic;
+signal rom_32_cs   		: std_logic;
+
 begin
 -- Configuration DIP switches, these can be brought out to external switches if desired
 -- See dominos 2 manual page 11 for complete information. Active low (0 = On, 1 = Off)
@@ -137,15 +160,12 @@ begin
 --   			3	4					Game Cost		(10 - 1 Coin per player) 
 --					5	6	7	8	Unused				
 
-SW1 <= "1010"; -- Config dip switches 1-4
+SW1 <= SW1_I; -- "1010"; -- Config dip switches 1-4
 
--- PLL to generate 12.096 MHz clock
-PLL: entity work.clk_pll
-port map(
-		inclk0 => Clk_50_I,
-		c0 => clk_12
-		);
-		
+rom3_cs <= '1' when dn_addr(13 downto 11) = "000"     else '0';
+rom4_cs <= '1' when dn_addr(13 downto 11) = "001"     else '0';
+rom_32_cs <= '1' when dn_addr(13 downto 11) = "010"     else '0';
+
 		
 Vid_sync: entity work.synchronizer
 port map(
@@ -202,7 +222,16 @@ port map(
 		Phi2_o => Phi2,
 		Display => Display,
 		IO_Adr => Adr,
-		Inputs => Inputs
+		Inputs => Inputs,
+		
+		dn_wr => dn_wr,
+		dn_addr=>dn_addr,
+		dn_data=>dn_data,
+		
+		rom3_cs=>rom3_cs,
+		rom4_cs=>rom4_cs,
+		rom_32_cs=>rom_32_cs
+
 		);
 
 
@@ -244,5 +273,9 @@ port map(
 VideoB_O <= (not BlackPF_n) nor CompBlank_s;	
 VideoW_O <= (not WhitePF_n);  
 Sync_O <= CompSync_n_s;
-
+hs_O<= hsync;
+hblank_O <= HBlank;
+vblank_O <= VBlank;
+vs_O <=vsync;
+clk_6_O<=clk_6;	
 end rtl;

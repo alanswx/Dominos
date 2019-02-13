@@ -30,7 +30,7 @@ port(
 			Display			: in  std_logic_vector(7 downto 0);
 			HCount			: in  std_logic_vector(8 downto 0);
 			VCount			: in  std_logic_vector(7 downto 0);
-			Audio_pwm		: out std_logic
+			Audio_pwm		: out std_logic_vector(7 downto 0)
 			);
 end audio;
 
@@ -160,19 +160,19 @@ Topple <= Tumble and (not V4);
 		
 	
 --Audio mixer, also mutes sound in attract mode
-Audio <= "0000" & ("00" & topple) + ('0' & tone_filtered) when attract = '0'
-				else "0000000";
+audio_pwm <= "00000" & ("00" & topple) + ('0' & tone_filtered) when attract = '0'
+				else "00000000";
 				
 
-DAC: entity work.deltasigma
-generic map(
-width => 7
-)
-port map(
-	inval => audio,
-	output => audio_pwm,
-	clk => clk_50,
-	reset => reset
-	);
+--DAC: entity work.deltasigma
+--generic map(
+--width => 7
+--)
+--port map(
+--	inval => audio,
+--	output => audio_pwm,
+--	clk => clk_50,
+--	reset => reset
+--	);
 	
 end rtl;

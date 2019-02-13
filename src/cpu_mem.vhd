@@ -39,7 +39,17 @@ port(
 			PHI2_O				: out 	 std_logic;
 			DISPLAY				: out	 std_logic_vector(7 downto 0);
 			IO_Adr				: out 	 std_logic_vector(9 downto 0);
-			Inputs				: in  	 std_logic_vector(1 downto 0)
+			Inputs				: in  	 std_logic_vector(1 downto 0);
+			
+			
+			-- signals that carry the ROM data from the MiSTer disk
+			dn_addr        	: in  std_logic_vector(15 downto 0);
+			dn_data        	: in  std_logic_vector(7 downto 0);
+			dn_wr          	: in  std_logic;
+			rom3_cs				: in  std_logic;
+			rom4_cs				: in  std_logic;
+			rom_32_cs			: in	std_logic
+
 			);
 end CPU_mem;
 
@@ -219,20 +229,32 @@ begin
 	end if;
 end process;
 		
+D1 : work.dpram generic map (11,8)
+port map
+(
+	clock_a   => clk6,
+	wren_a    => dn_wr and rom3_cs,
+	address_a => dn_addr(10 downto 0),
+	data_a    => dn_data,
 
-D1: entity work.prog_rom3
-port map(
-		clock => clk6,
-		address => A(10) & ADR(9 downto 0),
-		q => rom3_dout
-		);
+	clock_b   => clk6,
+	address_b => A(10) & ADR(9 downto 0),
+	q_b       => rom3_dout
+);
 
-E1: entity work.prog_rom4
-port map(
-		clock => clk6,
-		address => A(10) & ADR(9 downto 0),
-		q => rom4_dout
-		);
+E1 : work.dpram generic map (11,8)
+port map
+(
+	clock_a   => clk6,
+	wren_a    => dn_wr and rom4_cs,
+	address_a => dn_addr(10 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk6,
+	address_b => A(10) & ADR(9 downto 0),
+	q_b       => rom4_dout
+);
+		
 
 		
 -- ROM data mux
@@ -286,13 +308,20 @@ end process;
 -- Original circuit uses a bipolar PROM in the address decoder, this could be replaced with combinational logic
 
 -- E2 PROM 
-E2: entity work.addec_prom
-port map(
-	clock => clk12,
-	address => A(13 downto 9),
-	q => addec_bus
-	);
 
+E2 : work.dpram generic map (5,8)
+port map
+(
+	clock_a   => clk6,
+	wren_a    => dn_wr and rom_32_cs,
+	address_a => dn_addr(4 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk12,
+	address_b => A(13 downto 9),
+	q_b       => addec_bus
+);	
+	
 F2_in <= addec_bus(0) & addec_bus(1) & addec_bus(2) & addec_bus(3);	
 WRAM <= addec_bus(4);
 D2_in <= RnW & addec_bus(5) & addec_bus(6) & addec_bus(7);
