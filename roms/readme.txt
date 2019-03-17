@@ -1,1 +1,0 @@
-Replace these files with images from the MAME romset. Use swap.exe to convert MAME ROMs to .hex format used by Quartus.

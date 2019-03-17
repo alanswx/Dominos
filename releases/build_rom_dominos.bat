@@ -1,7 +1,8 @@
 @echo off
 
 set    zip=dominos.zip
-set ifiles=7352-02.d1+7438-02.e1+6401-01.e2
+set ifiles=7352-02.d1+7438-02.e1+7439-01.p4+7440-01.r4+6400-01.m2+6401-01.e2
+
 set  ofile=a.dominos.rom
 
 rem =====================================

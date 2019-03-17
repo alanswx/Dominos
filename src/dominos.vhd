@@ -152,6 +152,8 @@ signal Inputs			: std_logic_vector(1 downto 0);
 signal rom3_cs   			: std_logic;
 signal rom4_cs   			: std_logic;
 signal rom_32_cs   		: std_logic;
+signal rom_LSB_cs			: std_logic;
+signal rom_MSB_cs			: std_logic;
 
 begin
 -- Configuration DIP switches, these can be brought out to external switches if desired
@@ -162,9 +164,19 @@ begin
 
 SW1 <= SW1_I; -- "1010"; -- Config dip switches 1-4
 
-rom3_cs <= '1' when dn_addr(13 downto 11) = "000"     else '0';
-rom4_cs <= '1' when dn_addr(13 downto 11) = "001"     else '0';
-rom_32_cs <= '1' when dn_addr(13 downto 11) = "010"     else '0';
+
+--7352-02.d1	2048	0		 00 0000 0000 0000
+--7438-02.e1	2048	2048	 00 1000 0000 0000
+--7439-01.p4	512	4096	 01 0000 0000 0000  -- lsb
+--7440-01.r4	512	4608	 01 0010 0000 0000  -- msb
+--6400-01.m2	256	5120	 01 0100 0000 0000
+--6401-01.e2	32	5376		 01 0101 0000 0000
+
+rom3_cs <= '1' when dn_addr(12 downto 11) = "00"     else '0';
+rom4_cs <= '1' when dn_addr(12 downto 11) = "01"     else '0';
+rom_32_cs <= '1' when dn_addr(12 downto 11) = "10"     else '0';
+rom_LSB_cs <= '1' when dn_addr(12 downto 9) =  "1000"   else '0';
+rom_MSB_cs <= '1' when dn_addr(12 downto 9) =  "1001"   else '0';
 
 		
 Vid_sync: entity work.synchronizer
@@ -186,6 +198,7 @@ port map(
 Background: entity work.playfield
 port map( 
 		clk6 => clk_6,
+		clk12 => clk_12,
 		display => display,
 		HCount => HCount,
 		VCount => VCount,
@@ -198,7 +211,14 @@ port map(
 		CompSync_n_s => CompSync_n_s,
 		CompBlank_s => CompBlank_s,
 		WhitePF_n => WhitePF_n,
-		BlackPF_n => BlackPF_n 
+		BlackPF_n => BlackPF_n,
+
+		dn_wr => dn_wr,
+		dn_addr=>dn_addr,
+		dn_data=>dn_data,
+		
+		rom_LSB_cs=>rom_LSB_cs,
+		rom_MSB_cs=>rom_MSB_cs
 		);
 
 		

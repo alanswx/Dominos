@@ -232,7 +232,7 @@ end process;
 D1 : work.dpram generic map (11,8)
 port map
 (
-	clock_a   => clk6,
+	clock_a   => clk12,
 	wren_a    => dn_wr and rom3_cs,
 	address_a => dn_addr(10 downto 0),
 	data_a    => dn_data,
@@ -245,7 +245,7 @@ port map
 E1 : work.dpram generic map (11,8)
 port map
 (
-	clock_a   => clk6,
+	clock_a   => clk12,
 	wren_a    => dn_wr and rom4_cs,
 	address_a => dn_addr(10 downto 0),
 	data_a    => dn_data,
@@ -312,7 +312,7 @@ end process;
 E2 : work.dpram generic map (5,8)
 port map
 (
-	clock_a   => clk6,
+	clock_a   => clk12,
 	wren_a    => dn_wr and rom_32_cs,
 	address_a => dn_addr(4 downto 0),
 	data_a    => dn_data,
